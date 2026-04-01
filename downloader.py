@@ -3,7 +3,17 @@ downloader.py - 从 B 站下载音频
 """
 
 import os
+import sys
 import yt_dlp
+
+
+def _get_ffmpeg_path() -> str:
+    """打包成 exe 后优先使用同目录的 ffmpeg.exe，否则用系统 PATH"""
+    if getattr(sys, "frozen", False):
+        candidate = os.path.join(os.path.dirname(sys.executable), "ffmpeg.exe")
+        if os.path.isfile(candidate):
+            return candidate
+    return "ffmpeg"
 
 
 def download_audio(url: str, output_dir: str = "downloads") -> str:
@@ -19,6 +29,7 @@ def download_audio(url: str, output_dir: str = "downloads") -> str:
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(output_dir, "%(title)s.%(ext)s"),
+        "ffmpeg_location": _get_ffmpeg_path(),
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",

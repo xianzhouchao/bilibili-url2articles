@@ -6,7 +6,7 @@ import os
 import sys
 import threading
 import tkinter as tk
-from tkinter import ttk, scrolledtext, filedialog
+from tkinter import ttk, scrolledtext, messagebox
 
 # 确保能找到同目录的模块
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -92,6 +92,17 @@ class App(tk.Tk):
         )
         self.log.pack(fill="both", expand=True, padx=6, pady=6)
 
+        # API Key 设置
+        frm_key = ttk.LabelFrame(self, text="豆包 API Key 设置")
+        frm_key.pack(fill="x", padx=12, pady=(0, 8))
+        self.key_var = tk.StringVar(value=self._load_api_key())
+        ttk.Entry(frm_key, textvariable=self.key_var, width=52, show="*").pack(
+            side="left", padx=8, pady=6
+        )
+        ttk.Button(frm_key, text="保存", command=self._save_api_key, width=8).pack(
+            side="left", padx=4
+        )
+
     # --------------------------------------------------------------- 事件 ---
 
     def _on_run(self):
@@ -149,6 +160,39 @@ class App(tk.Tk):
 
     def _open_dir(self):
         os.startfile(BASE_DIR)
+
+    def _env_path(self):
+        return os.path.join(BASE_DIR, ".env")
+
+    def _load_api_key(self) -> str:
+        env = self._env_path()
+        if os.path.isfile(env):
+            for line in open(env, encoding="utf-8"):
+                if line.startswith("DOUBAO_API_KEY="):
+                    return line.strip().split("=", 1)[1]
+        return ""
+
+    def _save_api_key(self):
+        key = self.key_var.get().strip()
+        if not key:
+            messagebox.showwarning("提示", "API Key 不能为空")
+            return
+        env = self._env_path()
+        # 读取现有内容，更新或追加 DOUBAO_API_KEY
+        lines = []
+        found = False
+        if os.path.isfile(env):
+            for line in open(env, encoding="utf-8"):
+                if line.startswith("DOUBAO_API_KEY="):
+                    lines.append(f"DOUBAO_API_KEY={key}\n")
+                    found = True
+                else:
+                    lines.append(line)
+        if not found:
+            lines.append(f"DOUBAO_API_KEY={key}\n")
+        with open(env, "w", encoding="utf-8") as f:
+            f.writelines(lines)
+        messagebox.showinfo("已保存", "API Key 保存成功")
 
     def _log(self, msg: str, color: str = "white"):
         color_map = {
