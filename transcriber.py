@@ -2,7 +2,12 @@
 transcriber.py - 使用 faster-whisper 将音频转为文字
 """
 
+import os
 import site
+
+# 使用国内镜像下载 Whisper 模型，解决 HuggingFace 访问超时问题
+os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+
 from faster_whisper import WhisperModel
 
 # 自动把 nvidia CUDA 运行库路径加入 PATH（Windows 下 GPU 推理需要）

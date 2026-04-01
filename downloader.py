@@ -51,12 +51,18 @@ def download_audio(url: str, output_dir: str = "downloads") -> str:
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
-        title = info.get("title", "audio")
-        # yt-dlp 转码后扩展名变为 wav
-        audio_path = os.path.join(output_dir, f"{title}.wav")
+        # 用 yt-dlp 实际使用的文件名，避免特殊字符导致路径不匹配
+        actual_path = ydl.prepare_filename(info)
+        # 转码后扩展名变为 wav
+        audio_path = os.path.splitext(actual_path)[0] + ".wav"
 
     if not os.path.exists(audio_path):
-        raise FileNotFoundError(f"音频文件未找到: {audio_path}")
+        # fallback：在 output_dir 里找唯一的 wav 文件
+        wavs = [f for f in os.listdir(output_dir) if f.endswith(".wav")]
+        if len(wavs) == 1:
+            audio_path = os.path.join(output_dir, wavs[0])
+        else:
+            raise FileNotFoundError(f"音频文件未找到: {audio_path}")
 
     print(f"[downloader] 下载完成: {audio_path}")
     return audio_path
