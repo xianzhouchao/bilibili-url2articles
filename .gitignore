@@ -1,0 +1,25 @@
+# API Keys - 绝对不提交
+.env
+
+# 生成的文件
+audio/
+transcripts/
+articles/
+output/
+downloads/
+*.wav
+*.mp3
+
+# PyInstaller 产物
+dist/
+build/
+*.spec
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 模型缓存（巨大）
+*.bin
+*.pt
